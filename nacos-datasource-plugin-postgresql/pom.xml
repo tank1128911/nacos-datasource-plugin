@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ken.ext.alibaba.nacos</groupId>
+        <artifactId>nacos-datasource-plugin</artifactId>
+        <version>3.1.1</version>
+    </parent>
+
+    <groupId>ken.ext.alibaba.nacos.datasource</groupId>
+    <artifactId>nacos-datasource-plugin-postgresql</artifactId>
+    <version>3.1.1.0</version>
+
+    <description>阿里巴巴Nacos Postgresql数据源插件扩展</description>
+
+    <dependencies>
+        <!--扩展数据源公共基础依赖，必须引入！-->
+        <dependency>
+            <groupId>ken.ext.alibaba.nacos.datasource</groupId>
+            <artifactId>nacos-datasource-plugin-base</artifactId>
+            <version>3.1.1.0</version>
+        </dependency>
+        <!--postgresql jdbc驱动，扩展其它数据库源时需要改为对应数据库的jdbc依赖-->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.10</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <finalName>${project.artifactId}-${version}</finalName>
+    </build>
+</project>

@@ -17,7 +17,7 @@ public class ConfigInfoBetaMapperByPostgresql extends AbstractMapperByPostgresql
         int startRow = context.getStartRow();
 
         String sql = "SELECT id,data_id,group_id,tenant_id,app_name,content,md5,gmt_modified,beta_ips,encrypted_data_key" +
-                " FROM config_info_beta ORDER BY id LIMIT ? OFFSET ?";
+                " FROM config_info_beta ORDER BY id LIMIT " + pageSize + " OFFSET " + startRow;
         
         return new MapperResult(sql, CollectionUtils.list(pageSize, startRow));
     }

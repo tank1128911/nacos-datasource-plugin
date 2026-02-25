@@ -67,10 +67,9 @@ public class ConfigTagsRelationMapperByPostgresql extends AbstractMapperByPostgr
                 + "SELECT DISTINCT a.id,a.data_id,a.group_id,a.tenant_id,a.app_name,a.content,a.md5,a.type,a.encrypted_data_key,a.c_desc "
                 + "FROM config_info a LEFT JOIN config_tags_relation b ON a.id=b.id"
                 + innerWhere
-                + " ORDER BY b.id LIMIT ? OFFSET ?) c LEFT JOIN config_tags_relation d ON c.id=d.id "
+                + " ORDER BY b.id LIMIT " + pageSize + " OFFSET " + startRow
+                + ") c LEFT JOIN config_tags_relation d ON c.id=d.id "
                 + "GROUP BY c.id,c.data_id,c.group_id,c.tenant_id,c.app_name,c.content,c.md5,c.type,c.encrypted_data_key,c.c_desc";
-        paramList.add(pageSize);
-        paramList.add(startRow);
         
         return new MapperResult(sql, paramList);
     }
@@ -137,10 +136,7 @@ public class ConfigTagsRelationMapperByPostgresql extends AbstractMapperByPostgr
         }
 
         //排序和分页
-        subQuery.append(" ORDER BY b.id LIMIT ? OFFSET ?");
-        paramList.add(pageSize);
-        paramList.add(startRow);
-
+        subQuery.append(" ORDER BY b.id LIMIT ").append(pageSize).append(" OFFSET ").append(startRow);
         
         // 构建外层查询：获取筛选出的配置的完整标签信息
         final String sql = "SELECT c.id,c.data_id,c.group_id,c.tenant_id,c.app_name,c.content,c.md5,c.encrypted_data_key,c.type,c.c_desc,"

@@ -12,6 +12,7 @@ import com.alibaba.nacos.plugin.datasource.model.MapperResult;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,9 +30,9 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
 
         String sql = "SELECT id,data_id,group_id,tenant_id,app_name,content FROM config_info"
                 + " WHERE tenant_id LIKE ? AND app_name= ?"
-                + " ORDER BY id LIMIT ? OFFSET ?";
+                + " ORDER BY id LIMIT " + pageSize + " OFFSET " + startRow;
 
-        return new MapperResult(sql, CollectionUtils.list(tenantId, appName, pageSize, startRow));
+        return new MapperResult(sql, CollectionUtils.list(tenantId, appName));
     }
 
     @Override
@@ -40,9 +41,10 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         int pageSize = context.getPageSize();
         int startRow = context.getStartRow();
 
-        String sql = "SELECT tenant_id FROM config_info WHERE tenant_id != ? GROUP BY tenant_id ORDER BY tenant_id LIMIT ? OFFSET ?";
+        String sql = "SELECT tenant_id FROM config_info WHERE tenant_id != " + nameSpaceDefaultId
+                + " GROUP BY tenant_id ORDER BY tenant_id LIMIT " + pageSize + " OFFSET " + startRow;
 
-        return new MapperResult(sql, CollectionUtils.list(nameSpaceDefaultId, pageSize, startRow));
+        return new MapperResult(sql, Collections.emptyList());
     }
 
     @Override
@@ -51,9 +53,10 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         int pageSize = context.getPageSize();
         int startRow = context.getStartRow();
 
-        String sql = "SELECT group_id FROM config_info WHERE tenant_id =? GROUP BY group_id ORDER BY group_id LIMIT ? OFFSET ?";
+        String sql = "SELECT group_id FROM config_info WHERE tenant_id = " + nameSpaceDefaultId
+                + " GROUP BY group_id ORDER BY group_id LIMIT " + pageSize + " OFFSET " + startRow;
 
-        return new MapperResult(sql, CollectionUtils.list(nameSpaceDefaultId, pageSize, startRow));
+        return new MapperResult(sql, Collections.emptyList());
     }
 
     @Override
@@ -62,9 +65,10 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         int pageSize = context.getPageSize();
         int startRow = context.getStartRow();
 
-        String sql = "SELECT data_id,group_id,app_name FROM config_info WHERE tenant_id LIKE ? ORDER BY id LIMIT ? OFFSET ?";
+        String sql = "SELECT data_id,group_id,app_name FROM config_info WHERE tenant_id LIKE ?" +
+                " ORDER BY id LIMIT " + pageSize + " OFFSET " + startRow;
 
-        return new MapperResult(sql, CollectionUtils.list(tenantId, pageSize, startRow));
+        return new MapperResult(sql, CollectionUtils.list(tenantId));
     }
     
     @Override
@@ -72,9 +76,9 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         int pageSize = context.getPageSize();
         int startRow = context.getStartRow();
 
-        String sql = "SELECT id,data_id,group_id,content,md5 FROM config_info ORDER BY id LIMIT ? OFFSET ?";
+        String sql = "SELECT id,data_id,group_id,content,md5 FROM config_info ORDER BY id LIMIT " + pageSize + " OFFSET " + startRow;
 
-        return new MapperResult(sql, CollectionUtils.list(pageSize, startRow));
+        return new MapperResult(sql, Collections.emptyList());
     }
     
     @Override
@@ -84,9 +88,9 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         int startRow = context.getStartRow();
 
         String sql = "SELECT id,data_id,group_id,tenant_id,app_name," + (Boolean.parseBoolean(context.getContextParameter(ContextConstant.NEED_CONTENT)) ? "content," : "")
-                + "md5,gmt_modified,type,encrypted_data_key FROM config_info WHERE id > ? ORDER BY id LIMIT ? OFFSET ?";
+                + "md5,gmt_modified,type,encrypted_data_key FROM config_info WHERE id > ? ORDER BY id LIMIT " + pageSize + " OFFSET " + startRow;
 
-        return new MapperResult(sql, CollectionUtils.list(id, pageSize, startRow));
+        return new MapperResult(sql, CollectionUtils.list(id));
     }
     
     @Override
@@ -102,8 +106,7 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         List<Object> paramList = new ArrayList<>();
         
         final String sqlFetchRows = "SELECT id,data_id,group_id,tenant_id,app_name,type,md5,gmt_modified FROM config_info WHERE ";
-        String where = " id > ? ";
-        paramList.add(context.getWhereParameter(FieldConstant.LAST_MAX_ID));
+        String where = " 1=1 ";
 
         if (!StringUtils.isBlank(dataId)) {
             where += " AND data_id LIKE ? ";
@@ -132,11 +135,9 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
             paramList.add(endTime);
         }
 
-        final String paging = " ORDER BY id LIMIT ? OFFSET ?";
-        paramList.add(context.getPageSize());
-        paramList.add(context.getStartRow());
+        final String paging = " ORDER BY id ASC LIMIT " + context.getPageSize() + " OFFSET 0";
 
-        return new MapperResult(sqlFetchRows + where + paging, paramList);
+        return new MapperResult(sqlFetchRows + where + " AND id > " + context.getWhereParameter(FieldConstant.LAST_MAX_ID) + paging, paramList);
     }
     
     @Override
@@ -144,14 +145,13 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         int pageSize = context.getPageSize();
         int startRow = context.getStartRow();
 
-        String sql = "SELECT id,data_id,group_id,tenant_id,app_name,md5,type,gmt_modified,encrypted_data_key FROM config_info ORDER BY id LIMIT ? OFFSET ?";
+        String sql = "SELECT id,data_id,group_id,tenant_id,app_name,md5,type,gmt_modified,encrypted_data_key FROM config_info ORDER BY id LIMIT " + pageSize + " OFFSET " + startRow;
 
-        return new MapperResult(sql, CollectionUtils.list(pageSize, startRow));
+        return new MapperResult(sql, Collections.emptyList());
     }
     
     @Override
     public MapperResult findConfigInfoBaseLikeFetchRows(MapperContext context) {
-        List<Object> paramList = new ArrayList<>();
         final String dataId = (String) context.getWhereParameter(FieldConstant.DATA_ID);
         final String group = (String) context.getWhereParameter(FieldConstant.GROUP_ID);
         final String content = (String) context.getWhereParameter(FieldConstant.CONTENT);
@@ -159,8 +159,9 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         int startRow = context.getStartRow();
         
         final String sqlFetchRows = "SELECT id,data_id,group_id,tenant_id,content FROM config_info WHERE ";
-        String where = " tenant_id= ? ";
-        paramList.add(NamespaceUtil.getNamespaceDefaultId());
+        String where = " 1=1 AND tenant_id='" + NamespaceUtil.getNamespaceDefaultId() + "' ";
+
+        List<Object> paramList = new ArrayList<>();
         
         if (!StringUtils.isBlank(dataId)) {
             where += " AND data_id LIKE ? ";
@@ -175,9 +176,7 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
             paramList.add(content);
         }
 
-        final String paging = " ORDER BY id Limit ? OFFSET ?";
-        paramList.add(pageSize);
-        paramList.add(startRow);
+        final String paging = " ORDER BY id LIMIT " + pageSize + " OFFSET " + startRow;
 
         return new MapperResult(sqlFetchRows + where + paging, paramList);
     }
@@ -217,9 +216,7 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         }
         
         // 先分页，减少后续 JOIN 的数据量
-        innerSql.append(" ORDER BY id LIMIT ? OFFSET ?");
-        paramList.add(pageSize);
-        paramList.add(startRow);
+        innerSql.append(" ORDER BY id LIMIT ").append(pageSize).append(" OFFSET ").append(startRow);
         
         // 外层查询：对分页后的结果进行标签关联
         final String sql = "SELECT a.id,a.data_id,a.group_id,a.tenant_id,a.app_name,a.content,a.md5,a.type,a.encrypted_data_key,a.c_desc,"
@@ -235,10 +232,10 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         int pageSize = context.getPageSize();
         int startRow = context.getStartRow();
 
-        String sql = "SELECT id,data_id,group_id,content FROM config_info WHERE group_id=? AND tenant_id=? ORDER BY id LIMIT ? OFFSET ?";
+        String sql = "SELECT id,data_id,group_id,content FROM config_info WHERE group_id=? AND tenant_id=? ORDER BY id LIMIT " + pageSize + " OFFSET " + startRow;
 
         return new MapperResult(sql, CollectionUtils.list(context.getWhereParameter(FieldConstant.GROUP_ID),
-                context.getWhereParameter(FieldConstant.TENANT_ID), pageSize, startRow));
+                context.getWhereParameter(FieldConstant.TENANT_ID)));
     }
     
     @Override
@@ -288,9 +285,7 @@ public class ConfigInfoMapperByPostgresql extends AbstractMapperByPostgresql imp
         }
         
         // 先分页，减少后续 JOIN 的数据量
-        innerSql.append(" ORDER BY id LIMIT ? OFFSET ?");
-        paramList.add(pageSize);
-        paramList.add(startRow);
+        innerSql.append(" ORDER BY id LIMIT ").append(pageSize).append(" OFFSET ").append(startRow);
         
         // 外层查询：对分页后的结果进行标签关联
         final String sql = "SELECT a.id,a.data_id,a.group_id,a.tenant_id,a.app_name,a.content,a.md5,a.encrypted_data_key,a.type,a.c_desc,"

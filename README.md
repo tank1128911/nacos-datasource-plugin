@@ -10,6 +10,7 @@
 
 ## 环境要求
 JDK：17或以上，建议使用open JDK 17对应版本的GraalVM JDK
+
 Maven：3.9.9或以上，建议使用Maven 3.9.9
 
 ## 克隆项目
@@ -45,7 +46,7 @@ services:
       - "9848:9848"
     restart: unless-stopped
 ```
-在部署目录下创建nacos目录，并依次在nacos目录下创建env、data、logs和plugins4个子目录；再次上一步构建生成的nacos-datasource-plugin-base-3.1.1.0.jar和对应数据库扩展插件的jar复制到plugins。
+在部署目录下创建nacos目录，并依次在nacos目录下创建env、data、logs和plugins4个子目录；再次上一步构建生成的nacos-datasource-plugin-base-3.1.1.0.jar、对应数据库JDBC驱动和扩展插件的jar复制到plugins。
 
 复制项目根目录下的resources/conf至部署目录的nacos子目录下
 
@@ -71,3 +72,8 @@ docker compose up nacos -d
 如果你使用的是SqlServer等其它数据库，可参考nacos-datasource-plugin-postgresql模块的目录和文件结构自行开发新的支持插件。
 
 当你使用新的插件前，注意需要同步修改nacos-standalone.env中对应的配置项。
+
+## 特别提醒
+受Nacos分页查询的机制限制，某些SQL的LIMIT和OFFSET的值必须写死在代码中，不能通过参数传入；详细原因可自行查阅Nacos源码中的ExternalStoragePaginationHelperImpl.doFetchPage方法。
+
+如果你不确定正在定制的sql是否可以动态传入分页参数，建议参考Nacos官方对应的MySQL实现编写代码。

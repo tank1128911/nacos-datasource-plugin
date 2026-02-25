@@ -30,15 +30,17 @@ public class HistoryConfigInfoMapperByPostgresql extends AbstractMapperByPostgre
 
         List<Object> paramList = new ArrayList<>();
 
+        /**
+         * 受Nacos分页查询的机制限制，LIMIT和OFFSET的值必须写死在sql中，不能通过参数传入…………
+         * 详细原因可自行查阅Nacos源码中的ExternalStoragePaginationHelperImpl.doFetchPage方法
+         */
         String sql =
                 "SELECT nid,data_id,group_id,tenant_id,app_name,src_ip,src_user,op_type,ext_info,publish_type,gray_name,gmt_create,gmt_modified "
-                        + "FROM his_config_info " + "WHERE data_id = ? AND group_id = ? AND tenant_id = ? ORDER BY nid DESC  LIMIT ? OFFSET ?";
+                        + "FROM his_config_info " + "WHERE data_id = ? AND group_id = ? AND tenant_id = ? ORDER BY nid DESC LIMIT " + pageSize + " OFFSET " + startRow;
 
         paramList.add(context.getWhereParameter(FieldConstant.DATA_ID));
         paramList.add(context.getWhereParameter(FieldConstant.GROUP_ID));
         paramList.add(context.getWhereParameter(FieldConstant.TENANT_ID));
-        paramList.add(pageSize);
-        paramList.add(startRow);
 
         return new MapperResult(sql, paramList);
     }

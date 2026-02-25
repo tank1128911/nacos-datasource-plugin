@@ -1,4 +1,4 @@
-本项目扩展了Nacos对非MySql的外部数据源支持。受本人时间和能力限制，项目将主要扩展对PostgreSQL的支持；同时欢迎fork和pr，共同扩展Nacos支持外部数据源的范围。
+本项目扩展了Nacos对非MySql的外部数据源支持。受本人时间和能力限制，项目将主要扩展对PostgreSQL的支持；同时欢迎fork，star和pr，共同扩展Nacos支持外部数据源的范围。
 
 # 注意：
 1、本项目仅基于我日常的工作和学习场景进行测试，无法保证100%覆盖所有功能点。你可以随意使用和修改本项目的代码，但如果需要部署到生产环境，切记部署前先对功能进行充分验证以免造成不必要的损失。本人不对使用本项目代码造成的任何损失负任何责任。
@@ -26,6 +26,8 @@ mvn clean package
 ```
 
 ## 部署Nacos和插件
+使用应数据源插件模块的src/main/resources/META-INF/<数据源>-schema.sql脚本在数据库中创建运行nacos所需的数据表
+
 参考以下内容编写docker compose部署配置
 ```yaml
 services:
@@ -63,13 +65,24 @@ NACOS_AUTH_IDENTITY_KEY=serverIdentity
 NACOS_AUTH_IDENTITY_VALUE=security
 NACOS_AUTH_TOKEN=VGhpc0lzTXlDdXN0b21TZWNyZXRLZXkwMTIzNDU2Nzg=
 ```
+根据实际情况修改上述文件中并保存，主要修改内容如下：
+```text
+SPRING_DATASOURCE_PLATFORM：数据库标识，详见DsConstants类中的常量定义
+DB_DRIVER：数据库驱动类
+DB_URL：jdbc连接
+DB_USER：nacos用于连接数据库的用户名
+DB_PASSWORD：数据库密码
+NACOS_AUTH_IDENTITY_KEY：启用身份认证后用于完成身份认证的键，建议设置为任意足够复杂的字符串
+NACOS_AUTH_IDENTITY_VALUE：启用身份认证后用于完成身份认证的值，建议设置为任意足够复杂的字符串
+NACOS_AUTH_TOKEN：启用身份认证后用于完成身份认证的令牌，建议使用足够长且复杂的随机字符串
+```
 在部署目录下执行以下命令部署并启动容器：
 ```shell
 docker compose up nacos -d
 ```
 
 # 如何扩展其它数据库支持
-如果你使用的是SqlServer等其它数据库，可参考nacos-datasource-plugin-postgresql模块的目录和文件结构自行开发新的支持插件。
+如果你使用的是SqlServer等其它数据库，可参考nacos-datasource-plugin-postgresql模块的目录和文件结构自行开发新的支持插件。同时也欢迎将你的成果pr到本项目。
 
 当你使用新的插件前，注意需要同步修改nacos-standalone.env中对应的配置项。
 
